@@ -5,6 +5,7 @@ import { Bell, Search, ShieldCheck } from "lucide-react";
 
 interface AdminHeaderProps {
   title: string;
+  currentUser?: any;
   onOpenNotifications?: () => void;
   currentViewMode?: string;
   onChangeViewMode?: (mode: "login" | "dashboard" | "rooms") => void;
@@ -12,9 +13,18 @@ interface AdminHeaderProps {
 
 export function AdminHeader({
   title,
+  currentUser,
   currentViewMode,
   onChangeViewMode,
 }: AdminHeaderProps) {
+  const adminDisplayName =
+    currentUser?.user_metadata?.full_name ||
+    currentUser?.user_metadata?.username ||
+    currentUser?.email?.split("@")[0] ||
+    "Admin CITU";
+
+  const adminEmail = currentUser?.email || "admin@citu.tu.ac.th";
+
   return (
     <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 px-8 flex items-center justify-between sticky top-0 z-20">
       <div>
@@ -29,7 +39,7 @@ export function AdminHeader({
           <div className="hidden lg:flex items-center bg-slate-100 p-1 rounded-xl text-xs font-medium text-slate-600">
             <button
               onClick={() => onChangeViewMode("login")}
-              className={`px-3 py-1.5 rounded-lg transition ${
+              className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
                 currentViewMode === "login"
                   ? "bg-[#7b1124] text-white shadow-sm"
                   : "hover:text-slate-900"
@@ -39,7 +49,7 @@ export function AdminHeader({
             </button>
             <button
               onClick={() => onChangeViewMode("dashboard")}
-              className={`px-3 py-1.5 rounded-lg transition ${
+              className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
                 currentViewMode === "dashboard"
                   ? "bg-[#7b1124] text-white shadow-sm"
                   : "hover:text-slate-900"
@@ -49,7 +59,7 @@ export function AdminHeader({
             </button>
             <button
               onClick={() => onChangeViewMode("rooms")}
-              className={`px-3 py-1.5 rounded-lg transition ${
+              className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
                 currentViewMode === "rooms"
                   ? "bg-[#7b1124] text-white shadow-sm"
                   : "hover:text-slate-900"
@@ -71,14 +81,16 @@ export function AdminHeader({
 
         {/* Admin Profile Pill */}
         <div className="flex items-center space-x-3 pl-2 border-l border-slate-200">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#7b1124] to-[#9b1c31] text-white flex items-center justify-center font-bold text-xs shadow-sm ring-2 ring-rose-100">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#7b1124] to-[#9b1c31] text-white flex items-center justify-center font-bold text-xs shadow-sm ring-2 ring-rose-100 shrink-0">
             <ShieldCheck className="w-5 h-5" />
           </div>
-          <div className="text-left hidden sm:block">
-            <p className="text-sm font-semibold text-slate-800 leading-none">
-              Admin CITU
+          <div className="text-left hidden sm:block max-w-[160px] truncate">
+            <p className="text-sm font-semibold text-slate-800 leading-none truncate">
+              {adminDisplayName}
             </p>
-            <p className="text-[11px] text-slate-400 mt-1">ผู้ดูแลระบบ</p>
+            <p className="text-[11px] text-slate-400 mt-1 truncate" title={adminEmail}>
+              {adminEmail}
+            </p>
           </div>
         </div>
       </div>

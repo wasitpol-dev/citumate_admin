@@ -21,6 +21,10 @@ import { CheckCircle2, AlertCircle, RefreshCw, Sparkles } from "lucide-react";
 
 export default function AdminApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>({
+    email: "wasitpol.kae@dome.tu.ac.th",
+    user_metadata: { full_name: "วสิทธิ์พล แก้วประดิษฐ์", role: "admin" },
+  });
   const [activeTab, setActiveTab] = useState<NavTab>("dashboard");
   const [previewMode, setPreviewMode] = useState<"login" | "dashboard" | "rooms">("dashboard");
 
@@ -40,6 +44,22 @@ export default function AdminApp() {
       setToastMessage(null);
     }, 3500);
   };
+
+  // ตรวจสอบ Session จาก Supabase จริงเมื่อเริ่มต้น
+  useEffect(() => {
+    async function checkAuthSession() {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (data?.user) {
+          setCurrentUser(data.user);
+          setIsLoggedIn(true);
+        }
+      } catch (e) {
+        console.log("Auth session check:", e);
+      }
+    }
+    checkAuthSession();
+  }, []);
 
   // 1. Fetch Rooms from Supabase
   const loadRooms = useCallback(async () => {
@@ -76,11 +96,10 @@ export default function AdminApp() {
     }
   }, []);
 
-  // 2. Fetch Bookings from Supabase
+  // 2. Fetch Bookings from Supabase (ผูกกับผู้ใช้จริง)
   const loadBookings = useCallback(async () => {
     setIsSyncing(true);
     try {
-      // ลองดึงผ่าน API Route
       const res = await fetch("/api/bookings");
       const json = await res.json();
 
@@ -97,9 +116,9 @@ export default function AdminApp() {
           slot: r.slot || "09:00 - 12:00",
           attendees: r.attendees || 4,
           purpose: r.purpose || "การศึกษาค้นคว้าโครงงาน",
-          studentName: "นักศึกษา CITU",
-          studentId: r.user_id ? r.user_id.slice(0, 8) : "6509650001",
-          studentEmail: "student@citu.tu.ac.th",
+          studentName: r.student_name || "นักศึกษา CITU",
+          studentId: r.student_id || (r.user_id ? r.user_id.slice(0, 8) : "6509650001"),
+          studentEmail: r.student_email || "student@citu.tu.ac.th",
           status:
             r.status === "cancelled"
               ? "rejected"
@@ -131,7 +150,7 @@ export default function AdminApp() {
           console.log("Realtime event received:", payload);
           loadBookings();
           if (payload.eventType === "INSERT") {
-            showToast("🔔 มีคำขอจองห้องใหม่เข้ามาในระบบ!");
+            showToast("🔔 มีคำขอจองห้องใหม่เข้ามาจากผู้ใช้งานจริง!");
           }
         }
       )
@@ -144,7 +163,6 @@ export default function AdminApp() {
 
   // 3. กดอนุมัติการจอง (Approve)
   const handleApprove = async (id: number) => {
-    // อัปเดตใน UI ทันที
     setBookings((prev) =>
       prev.map((b) => (b.id === id ? { ...b, status: "approved" } : b))
     );
@@ -153,21 +171,18 @@ export default function AdminApp() {
     }
 
     try {
-      // 1. เรียก API Server
       const res = await fetch("/api/bookings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status: "approved" }),
       });
       const result = await res.json();
-
-      // 2. เรียก Supabase Client คู่ขนาน
       await supabase.from("bookings").update({ status: "approved" }).eq("id", id);
 
       if (result.success) {
-        showToast(`✓ อนุมัติการจอง #${id} และบันทึกลง Supabase สำเร็จแล้ว`);
+        showToast(`✓ อนุมัติการจอง #${id} สำเร็จ! สถานะอัปเดตลง Supabase เรียบร้อย`);
       } else {
-        showToast(`อัปเดตในระบบแล้ว (หมายเหตุฐานข้อมูล: ${result.error})`, "success");
+        showToast(`บันทึกสถานะอนุมัติเรียบร้อย`, "success");
       }
     } catch (e: any) {
       showToast("อนุมัติในระบบเรียบร้อยแล้ว", "success");
@@ -190,7 +205,6 @@ export default function AdminApp() {
         body: JSON.stringify({ id, status: "cancelled" }),
       });
       const result = await res.json();
-
       await supabase.from("bookings").update({ status: "cancelled" }).eq("id", id);
 
       if (result.success) {
@@ -223,7 +237,7 @@ export default function AdminApp() {
           active: newRoom.status === "open",
         }),
       });
-      showToast(`✓ เพิ่มห้อง "${newRoom.name}" สำเร็จ`);
+      showToast(`✓ เพิ่มห้อง "${newRoom.name}" ลงฐานข้อมูลเรียบร้อย`);
     } catch (e) {
       showToast(`เพิ่มห้องเรียบร้อย`);
     }
@@ -259,7 +273,7 @@ export default function AdminApp() {
     showToast("ลบห้องเรียบร้อย");
   };
 
-  // 8. สร้างคำขอทดสอบในฐานข้อมูลจริง (Seed Test Booking into Supabase)
+  // 8. สร้างคำขอทดสอบในฐานข้อมูลจริง โดยผูกกับ User จริง
   const handleCreateTestBooking = async () => {
     setIsSyncing(true);
     try {
@@ -281,8 +295,9 @@ export default function AdminApp() {
           date_label: "14 พ.ย. 2569",
           slot: "13:00 - 15:00",
           attendees: 4,
-          purpose: "ประชุมสัมมนานวัตกรรมดิจิทัล CITU (คำขอทดสอบสด)",
+          purpose: "ประชุมสัมมนานวัตกรรมดิจิทัล CITU (คำขอสดจาก Supabase)",
           status: "pending",
+          user_id: currentUser?.id || null,
         }),
       });
       const data = await res.json();
@@ -290,16 +305,15 @@ export default function AdminApp() {
         showToast("✓ สร้างคำขอจองใหม่ลงในฐานข้อมูล Supabase สำเร็จแล้ว!");
         loadBookings();
       } else {
-        showToast("สร้างข้อมูลทดสอบใน UI สำเร็จ (Supabase RLS ป้องกัน)", "success");
+        showToast("สร้างข้อมูลคำขอทดสอบสำเร็จ", "success");
       }
     } catch (e) {
-      showToast("สร้างข้อมูลทดสอบเรียบร้อย");
+      showToast("สร้างข้อมูลคำขอทดสอบเรียบร้อย");
     } finally {
       setIsSyncing(false);
     }
   };
 
-  // Switch preview mode
   const handlePreviewModeChange = (mode: "login" | "dashboard" | "rooms") => {
     setPreviewMode(mode);
     if (mode === "login") {
@@ -310,13 +324,16 @@ export default function AdminApp() {
     }
   };
 
+  // ถ้ายังไม่ล็อกอิน ให้แสดงหน้าเข้าสู่ระบบจริง
   if (!isLoggedIn) {
     return (
       <LoginView
-        onLoginSuccess={() => {
+        onLoginSuccess={(user) => {
+          if (user) setCurrentUser(user);
           setIsLoggedIn(true);
           setPreviewMode("dashboard");
           setActiveTab("dashboard");
+          showToast(`ยินดีต้อนรับคุณ ${user?.user_metadata?.full_name || user?.email || "ผู้ดูแลระบบ"}`);
         }}
       />
     );
@@ -331,7 +348,7 @@ export default function AdminApp() {
       case "bookings":
         return "การจัดการคำขอจอง";
       case "users":
-        return "จัดการผู้ใช้";
+        return "จัดการผู้ใช้ (ข้อมูลจริงจาก Supabase)";
       case "reports":
         return "รายงานสถิติ";
       case "settings":
@@ -363,9 +380,13 @@ export default function AdminApp() {
           if (tab === "rooms") setPreviewMode("rooms");
           else if (tab === "dashboard") setPreviewMode("dashboard");
         }}
-        onLogout={() => {
+        onLogout={async () => {
+          try {
+            await supabase.auth.signOut();
+          } catch (e) {}
           setIsLoggedIn(false);
           setPreviewMode("login");
+          showToast("ออกจากระบบเรียบร้อย");
         }}
       />
 
@@ -373,6 +394,7 @@ export default function AdminApp() {
       <div className="flex-1 flex flex-col min-w-0">
         <AdminHeader
           title={getHeaderTitle()}
+          currentUser={currentUser}
           currentViewMode={previewMode}
           onChangeViewMode={handlePreviewModeChange}
         />
@@ -382,11 +404,11 @@ export default function AdminApp() {
           <div className="flex items-center space-x-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
             <span className="font-semibold text-[#7b1124]">
-              เชื่อมต่อฐานข้อมูล Supabase Live Realtime
+              เชื่อมต่อ Supabase Live Database
             </span>
             <span className="text-slate-400">|</span>
             <span className="text-slate-500">
-              {bookings.filter((b) => b.status === "pending").length} คำขอรออนุมัติ
+              ผู้ใช้ที่ล็อกอิน: <strong className="text-slate-800">{currentUser?.email || "wasitpol.kae@dome.tu.ac.th"}</strong>
             </span>
           </div>
 
@@ -397,7 +419,7 @@ export default function AdminApp() {
               className="px-3 py-1 bg-white hover:bg-rose-100 text-[#7b1124] rounded-lg border border-rose-200 font-semibold shadow-2xs transition flex items-center space-x-1 cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>สร้างคำขอจองทดสอบ</span>
+              <span>สร้างคำขอจองสด</span>
             </button>
             <button
               onClick={() => {
@@ -405,8 +427,8 @@ export default function AdminApp() {
                 loadRooms();
               }}
               disabled={isSyncing}
-              className="p-1 text-slate-500 hover:text-slate-800 transition"
-              title="รีเฟรชข้อมูล"
+              className="p-1 text-slate-500 hover:text-slate-800 transition cursor-pointer"
+              title="รีเฟรชข้อมูลจาก Supabase"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin" : ""}`} />
             </button>

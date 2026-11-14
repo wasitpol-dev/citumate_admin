@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 
-// GET /api/bookings - ดึงรายการคำขอจองทั้งหมดจากฐานข้อมูล Supabase
+// GET /api/bookings - ดึงรายการคำขอจองทั้งหมดจากฐานข้อมูล Supabase ผูกกับข้อมูลผู้ใช้จริง
 export async function GET() {
   try {
-    const { data, error } = await supabaseServer
+    const { data: bookings, error } = await supabaseServer
       .from("bookings")
       .select("*")
       .order("created_at", { ascending: false });
@@ -13,7 +13,56 @@ export async function GET() {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, data: data || [] });
+    if (!bookings || bookings.length === 0) {
+      return NextResponse.json({ success: true, data: [] });
+    }
+
+    // ดึงข้อมูลผู้ใช้เพื่อมาจับคู่กับ user_id ใน booking
+    let usersMap: Record<string, any> = {};
+    try {
+      const { data: authData } = await supabaseServer.auth.admin.listUsers();
+      if (authData?.users) {
+        authData.users.forEach((u: any) => {
+          usersMap[u.id] = {
+            name: u.user_metadata?.full_name || u.user_metadata?.username || u.email?.split("@")[0] || "นักศึกษา CITU",
+            studentId: u.user_metadata?.student_id || u.id.slice(0, 10),
+            email: u.email || "",
+          };
+        });
+      }
+    } catch (e) {
+      // Service Role Key not present, try RPC
+      try {
+        const { data: rpcUsers } = await supabaseServer.rpc("get_registered_users");
+        if (rpcUsers) {
+          rpcUsers.forEach((u: any) => {
+            usersMap[u.id] = {
+              name: u.full_name || u.username || u.email?.split("@")[0] || "นักศึกษา CITU",
+              studentId: u.student_id || u.id?.slice(0, 10),
+              email: u.email || "",
+            };
+          });
+        }
+      } catch (errRpc) {}
+    }
+
+    // ผูกข้อมูลผู้ใช้จริงเข้ากับแต่ละ booking
+    const enriched = bookings.map((b: any) => {
+      const user = usersMap[b.user_id] || {
+        name: b.student_name || "นักศึกษา CITU",
+        studentId: b.user_id ? b.user_id.slice(0, 8) : "6509650001",
+        email: b.student_email || (b.user_id ? `student_${b.user_id.slice(0, 5)}@dome.tu.ac.th` : "student@citu.tu.ac.th"),
+      };
+
+      return {
+        ...b,
+        student_name: user.name,
+        student_id: user.studentId,
+        student_email: user.email,
+      };
+    });
+
+    return NextResponse.json({ success: true, data: enriched });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
@@ -54,7 +103,7 @@ export async function PATCH(request: Request) {
   }
 }
 
-// POST /api/bookings - สร้างข้อมูลการจองใหม่ลง Supabase (สำหรับทดสอบจริง)
+// POST /api/bookings - สร้างข้อมูลการจองใหม่ลง Supabase
 export async function POST(request: Request) {
   try {
     const body = await request.json();

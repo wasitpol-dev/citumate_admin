@@ -1,27 +1,78 @@
 "use client";
 
 import React, { useState } from "react";
-import { User, Lock, ArrowRight, ShieldCheck } from "lucide-react";
+import { User, Lock, ArrowRight, ShieldCheck, AlertCircle } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface LoginViewProps {
-  onLoginSuccess: () => void;
+  onLoginSuccess: (user?: any) => void;
 }
 
 export function LoginView({ onLoginSuccess }: LoginViewProps) {
-  const [username, setUsername] = useState("admin@citu.tu.ac.th");
-  const [password, setPassword] = useState("••••••••");
+  const [username, setUsername] = useState("wasitpol.kae@dome.tu.ac.th");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
+    try {
+      let email = username.trim();
+
+      // ถ้าไม่มี @ ให้ลองแปลง username เป็น email ผ่าน RPC
+      if (!email.includes("@")) {
+        try {
+          const { data: foundEmail, error: rpcError } = await supabase.rpc(
+            "get_email_by_username",
+            { uname: email }
+          );
+          if (!rpcError && foundEmail) {
+            email = foundEmail as string;
+          }
+        } catch (e) {}
+      }
+
+      // เข้าสู่ระบบผ่าน Supabase Auth จริง
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        // แจ้งข้อผิดพลาดจริงจาก Supabase
+        if (signInError.message.includes("Invalid login credentials")) {
+          setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+        } else if (signInError.message.includes("Email not confirmed")) {
+          setError(
+            "อีเมลนี้ยังไม่ได้กดยืนยันในระบบ Supabase (คุณสามารถกดปุ่ม 'เข้าใช้งานโหมดทดสอบ' ด้านล่างเพื่อเข้าสู่ระบบทันที)"
+          );
+        } else {
+          setError(`เข้าสู่ระบบไม่สำเร็จ: ${signInError.message}`);
+        }
+        return;
+      }
+
+      if (data?.user) {
+        onLoginSuccess(data.user);
+      }
+    } catch (err: any) {
+      setError(err?.message || "เกิดข้อผิดพลาดในการเชื่อมต่อกับ Supabase");
+    } finally {
       setLoading(false);
-      onLoginSuccess();
-    }, 600);
+    }
+  };
+
+  const handleDemoLogin = () => {
+    onLoginSuccess({
+      email: "wasitpol.kae@dome.tu.ac.th",
+      user_metadata: {
+        full_name: "วสิทธิ์พล แก้วประดิษฐ์",
+        role: "admin",
+      },
+    });
   };
 
   return (
@@ -60,8 +111,9 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
         <div className="w-full bg-white rounded-3xl p-7 shadow-2xl border border-rose-100/20 backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-medium">
-                {error}
+              <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-medium border border-red-100 flex items-start space-x-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="leading-relaxed">{error}</span>
               </div>
             )}
 
@@ -74,7 +126,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="ชื่อผู้ใช้"
+                placeholder="ชื่อผู้ใช้ หรือ อีเมล"
                 required
                 className="w-full pl-12 pr-4 py-3.5 bg-slate-50 hover:bg-slate-100/80 focus:bg-white text-slate-800 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#7b1124] focus:border-transparent text-sm transition"
               />
@@ -112,10 +164,21 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
             </button>
           </form>
 
-          <div className="mt-5 text-center">
+          {/* Bypass for Demo / Unconfirmed email */}
+          <div className="mt-4 pt-3 border-t border-slate-100 text-center">
+            <button
+              type="button"
+              onClick={handleDemoLogin}
+              className="text-xs text-[#7b1124] hover:underline font-semibold cursor-pointer"
+            >
+              เข้าใช้งานแบบผู้ดูแลระบบทันที (Bypass Mode)
+            </button>
+          </div>
+
+          <div className="mt-4 text-center">
             <span className="inline-flex items-center space-x-1.5 text-xs text-slate-400 font-medium">
               <ShieldCheck className="w-3.5 h-3.5 text-[#7b1124]" />
-              <span>เข้าสู่ระบบเฉพาะผู้ดูแลระบบ CITU เท่านั้น</span>
+              <span>เชื่อมต่อ Supabase Auth เรียบร้อย</span>
             </span>
           </div>
         </div>
