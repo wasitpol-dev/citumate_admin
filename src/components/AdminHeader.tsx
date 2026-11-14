@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Bell, Search, ShieldCheck } from "lucide-react";
+import { Bell, Menu, ShieldCheck } from "lucide-react";
 
 interface AdminHeaderProps {
   title: string;
@@ -9,6 +9,7 @@ interface AdminHeaderProps {
   onOpenNotifications?: () => void;
   currentViewMode?: string;
   onChangeViewMode?: (mode: "login" | "dashboard" | "rooms") => void;
+  onToggleSidebar?: () => void;
 }
 
 export function AdminHeader({
@@ -16,6 +17,7 @@ export function AdminHeader({
   currentUser,
   currentViewMode,
   onChangeViewMode,
+  onToggleSidebar,
 }: AdminHeaderProps) {
   const adminDisplayName =
     currentUser?.user_metadata?.full_name ||
@@ -26,15 +28,23 @@ export function AdminHeader({
   const adminEmail = currentUser?.email || "admin@citu.tu.ac.th";
 
   return (
-    <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 px-8 flex items-center justify-between sticky top-0 z-20">
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
+    <header className="h-16 md:h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 md:px-8 flex items-center justify-between sticky top-0 z-20">
+      <div className="flex items-center space-x-3 min-w-0">
+        {/* ปุ่ม Hamburger (มือถือ) */}
+        <button
+          onClick={onToggleSidebar}
+          className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition md:hidden shrink-0"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        <h2 className="text-lg md:text-2xl font-bold text-slate-800 tracking-tight truncate">
           {title}
         </h2>
       </div>
 
-      <div className="flex items-center space-x-4">
-        {/* Quick Screen Preview Switcher as requested by user's 3-panel screenshot */}
+      <div className="flex items-center space-x-2 md:space-x-4 shrink-0">
+        {/* Quick Screen Preview Switcher — ซ่อนบนจอเล็ก */}
         {onChangeViewMode && (
           <div className="hidden lg:flex items-center bg-slate-100 p-1 rounded-xl text-xs font-medium text-slate-600">
             <button
@@ -72,17 +82,17 @@ export function AdminHeader({
 
         {/* Notification Icon */}
         <button
-          className="relative p-2.5 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
+          className="relative p-2 md:p-2.5 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
           title="การแจ้งเตือน"
         >
           <Bell className="w-5 h-5" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-[#7b1124] rounded-full ring-2 ring-white"></span>
+          <span className="absolute top-1.5 right-1.5 md:top-2 md:right-2 w-2 h-2 bg-[#7b1124] rounded-full ring-2 ring-white"></span>
         </button>
 
         {/* Admin Profile Pill */}
-        <div className="flex items-center space-x-3 pl-2 border-l border-slate-200">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#7b1124] to-[#9b1c31] text-white flex items-center justify-center font-bold text-xs shadow-sm ring-2 ring-rose-100 shrink-0">
-            <ShieldCheck className="w-5 h-5" />
+        <div className="flex items-center space-x-2 md:space-x-3 pl-2 border-l border-slate-200">
+          <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-gradient-to-tr from-[#7b1124] to-[#9b1c31] text-white flex items-center justify-center font-bold text-xs shadow-sm ring-2 ring-rose-100 shrink-0">
+            <ShieldCheck className="w-4 h-4 md:w-5 md:h-5" />
           </div>
           <div className="text-left hidden sm:block max-w-[160px] truncate">
             <p className="text-sm font-semibold text-slate-800 leading-none truncate">

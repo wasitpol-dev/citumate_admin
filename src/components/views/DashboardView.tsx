@@ -105,14 +105,14 @@ export function DashboardView({
   };
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-4 md:p-8 space-y-6 md:space-y-8 max-w-7xl mx-auto">
       {/* 1. Summary Cards Section (Real Counts) */}
       <div>
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-xl font-bold text-slate-800 flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 md:mb-5 gap-2">
+          <h3 className="text-lg md:text-xl font-bold text-slate-800 flex items-center space-x-2">
             <span>สรุปการใช้งานวันนี้</span>
           </h3>
-          <span className="text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+          <span className="text-[10px] md:text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full self-start sm:self-auto">
             ● ข้อมูลจริงจากฐานข้อมูล Supabase
           </span>
         </div>
@@ -168,10 +168,10 @@ export function DashboardView({
       </div>
 
       {/* 2. Room Usage Statistics Chart (Computed from Real Bookings) */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
+      <div className="bg-white rounded-3xl p-4 md:p-6 border border-slate-100 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
           <div>
-            <h4 className="text-lg font-bold text-slate-800">สถิติการใช้ห้อง</h4>
+            <h4 className="text-base md:text-lg font-bold text-slate-800">สถิติการใช้ห้อง</h4>
             <p className="text-xs text-slate-400">
               {total > 0
                 ? "คำนวณจากจำนวนผู้เข้าร่วมการจองจริงในแต่ละช่วงเวลา (คน/ช่วงเวลา)"

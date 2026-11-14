@@ -27,6 +27,7 @@ export default function AdminApp() {
   });
   const [activeTab, setActiveTab] = useState<NavTab>("dashboard");
   const [previewMode, setPreviewMode] = useState<"login" | "dashboard" | "rooms">("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [rooms, setRooms] = useState<Room[]>(INITIAL_ROOMS);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -362,19 +363,21 @@ export default function AdminApp() {
     <div className="min-h-screen bg-[#f8fafc] flex relative">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-50 flex items-center space-x-2 px-4 py-3 bg-slate-900 text-white text-xs font-semibold rounded-2xl shadow-2xl border border-slate-700 animate-in fade-in slide-in-from-top-4">
+        <div className="fixed top-4 left-4 right-4 md:left-auto md:right-6 md:top-6 z-[60] flex items-center space-x-2 px-4 py-3 bg-slate-900 text-white text-xs font-semibold rounded-2xl shadow-2xl border border-slate-700 animate-in fade-in slide-in-from-top-4">
           {toastMessage.type === "success" ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           ) : (
-            <AlertCircle className="w-4 h-4 text-rose-400" />
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
           )}
-          <span>{toastMessage.text}</span>
+          <span className="line-clamp-2">{toastMessage.text}</span>
         </div>
       )}
 
       {/* 1. Sidebar */}
       <AdminSidebar
         activeTab={activeTab}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
         onSelectTab={(tab) => {
           setActiveTab(tab);
           if (tab === "rooms") setPreviewMode("rooms");
@@ -397,29 +400,34 @@ export default function AdminApp() {
           currentUser={currentUser}
           currentViewMode={previewMode}
           onChangeViewMode={handlePreviewModeChange}
+          onToggleSidebar={() => setSidebarOpen(true)}
         />
 
         {/* Live Database Sync Control Bar */}
-        <div className="bg-rose-50/70 border-b border-rose-100 px-8 py-2.5 flex items-center justify-between text-xs text-rose-900">
-          <div className="flex items-center space-x-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-            <span className="font-semibold text-[#7b1124]">
+        <div className="bg-rose-50/70 border-b border-rose-100 px-4 md:px-8 py-2 md:py-2.5 flex items-center justify-between text-xs text-rose-900">
+          <div className="flex items-center space-x-2 min-w-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
+            <span className="font-semibold text-[#7b1124] hidden sm:inline">
               เชื่อมต่อ Supabase Live Database
             </span>
-            <span className="text-slate-400">|</span>
-            <span className="text-slate-500">
+            <span className="font-semibold text-[#7b1124] sm:hidden">
+              Live DB
+            </span>
+            <span className="text-slate-400 hidden md:inline">|</span>
+            <span className="text-slate-500 hidden md:inline truncate">
               ผู้ใช้ที่ล็อกอิน: <strong className="text-slate-800">{currentUser?.email || "wasitpol.kae@dome.tu.ac.th"}</strong>
             </span>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 md:space-x-3 shrink-0">
             <button
               onClick={handleCreateTestBooking}
               disabled={isSyncing}
-              className="px-3 py-1 bg-white hover:bg-rose-100 text-[#7b1124] rounded-lg border border-rose-200 font-semibold shadow-2xs transition flex items-center space-x-1 cursor-pointer"
+              className="px-2 md:px-3 py-1 bg-white hover:bg-rose-100 text-[#7b1124] rounded-lg border border-rose-200 font-semibold shadow-2xs transition flex items-center space-x-1 cursor-pointer text-[10px] md:text-xs"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>สร้างคำขอจองสด</span>
+              <Sparkles className="w-3 h-3 md:w-3.5 md:h-3.5" />
+              <span className="hidden sm:inline">สร้างคำขอจองสด</span>
+              <span className="sm:hidden">สร้าง</span>
             </button>
             <button
               onClick={() => {
