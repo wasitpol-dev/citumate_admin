@@ -76,7 +76,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#7b1124] flex flex-col justify-between items-center p-6 relative overflow-hidden select-none">
+    <div className="min-h-[100dvh] bg-[#7b1124] flex flex-col justify-between items-center p-6 relative overflow-hidden">
       {/* Background Subtle Gradient Blobs */}
       <div className="absolute top-[-15%] left-[-10%] w-96 h-96 bg-rose-800/30 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-[-15%] right-[-10%] w-96 h-96 bg-black/20 rounded-full blur-3xl pointer-events-none" />
@@ -108,7 +108,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
         </div>
 
         {/* Login Card (Exact match to design) */}
-        <div className="w-full bg-white rounded-3xl p-7 shadow-2xl border border-rose-100/20 backdrop-blur-sm">
+        <div className="w-full bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-rose-100/20 backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="p-3 bg-red-50 text-red-600 rounded-xl text-xs font-medium border border-red-100 flex items-start space-x-2">

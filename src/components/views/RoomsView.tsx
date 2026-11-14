@@ -84,7 +84,7 @@ export function RoomsView({
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* Top Header & Search Bar (Exact Match) */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -144,14 +144,14 @@ export function RoomsView({
       {/* Table (Exact Match to Design) */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[720px] text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
-                <th className="py-4 px-6">ชื่อห้อง</th>
-                <th className="py-4 px-6">ประเภท</th>
-                <th className="py-4 px-6 text-center">จำนวนที่นั่ง</th>
-                <th className="py-4 px-6 text-center">สถานะ</th>
-                <th className="py-4 px-6 text-right">การจัดการ</th>
+                <th className="py-3 px-4 md:py-4 md:px-6">ชื่อห้อง</th>
+                <th className="py-3 px-4 md:py-4 md:px-6">ประเภท</th>
+                <th className="py-3 px-4 md:py-4 md:px-6 text-center">จำนวนที่นั่ง</th>
+                <th className="py-3 px-4 md:py-4 md:px-6 text-center">สถานะ</th>
+                <th className="py-3 px-4 md:py-4 md:px-6 text-right">การจัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
@@ -170,14 +170,14 @@ export function RoomsView({
                       className="hover:bg-slate-50/70 transition duration-150 group"
                     >
                       {/* ชื่อห้อง พร้อมรูปภาพ */}
-                      <td className="py-4 px-6">
-                        <div className="flex items-center space-x-4">
+                      <td className="py-3 px-4 md:py-4 md:px-6">
+                        <div className="flex items-center space-x-3 md:space-x-4">
                           <img
                             src={room.image}
                             alt={room.name}
-                            className="w-16 h-12 object-cover rounded-xl shadow-xs ring-1 ring-slate-100 shrink-0"
+                            className="w-12 h-10 md:w-16 md:h-12 object-cover rounded-xl shadow-xs ring-1 ring-slate-100 shrink-0"
                           />
-                          <div>
+                          <div className="min-w-0">
                             <p className="font-bold text-slate-800 group-hover:text-[#7b1124] transition">
                               {room.name}
                             </p>
@@ -189,26 +189,26 @@ export function RoomsView({
                       </td>
 
                       {/* ประเภท */}
-                      <td className="py-4 px-6">
-                        <span className="text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-lg">
+                      <td className="py-3 px-4 md:py-4 md:px-6">
+                        <span className="text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-lg whitespace-nowrap">
                           {room.type}
                         </span>
                       </td>
 
                       {/* จำนวนที่นั่ง */}
-                      <td className="py-4 px-6 text-center font-medium text-slate-700">
+                      <td className="py-3 px-4 md:py-4 md:px-6 text-center font-medium text-slate-700 whitespace-nowrap">
                         {room.capacity}
                       </td>
 
                       {/* สถานะ */}
-                      <td className="py-4 px-6 text-center">
+                      <td className="py-3 px-4 md:py-4 md:px-6 text-center">
                         {isOpen ? (
-                          <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                             <span>เปิดใช้งาน</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                          <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap">
                             <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                             <span>ซ่อมบำรุง</span>
                           </span>
@@ -216,7 +216,7 @@ export function RoomsView({
                       </td>
 
                       {/* Action 3 Dots */}
-                      <td className="py-4 px-6 text-right relative">
+                      <td className="py-3 px-4 md:py-4 md:px-6 text-right relative">
                         <button
                           onClick={() =>
                             setActiveMenuId(activeMenuId === room.id ? null : room.id)
@@ -228,7 +228,7 @@ export function RoomsView({
 
                         {/* Dropdown Menu */}
                         {activeMenuId === room.id && (
-                          <div className="absolute right-6 top-12 z-30 w-44 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 animate-in fade-in zoom-in-95">
+                          <div className="absolute right-4 md:right-6 top-12 z-30 w-44 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 animate-in fade-in zoom-in-95">
                             <button
                               onClick={() => {
                                 onToggleStatus(room.id);
@@ -264,7 +264,7 @@ export function RoomsView({
       {/* Add Room Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95">
+          <div className="bg-white rounded-3xl p-5 md:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h4 className="text-lg font-bold text-slate-800">เพิ่มห้องใหม่</h4>
               <button

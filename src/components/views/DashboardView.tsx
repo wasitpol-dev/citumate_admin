@@ -117,7 +117,7 @@ export function DashboardView({
           </span>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
           {/* Card 1: Total Real Bookings */}
           <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition flex flex-col items-center justify-center text-center">
             <div className="w-12 h-12 rounded-2xl bg-rose-50 text-[#7b1124] flex items-center justify-center mb-3">
@@ -178,7 +178,7 @@ export function DashboardView({
                 : "ยังไม่มีประวัติการจองในระบบ — กราฟจะแสดงความสูงอัตโนมัติเมื่อมีคนจองจริง"}
             </p>
           </div>
-          <div className="flex items-center space-x-5 text-xs font-medium">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs font-medium">
             <div className="flex items-center space-x-2">
               <span className="w-3 h-3 rounded-full bg-rose-300"></span>
               <span className="text-slate-600">ห้องศึกษาค้นคว้า</span>
@@ -248,7 +248,7 @@ export function DashboardView({
       </div>
 
       {/* 3. Recent Bookings List (Real Bookings Only) */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
+      <div className="bg-white rounded-3xl p-4 md:p-6 border border-slate-100 shadow-sm">
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div>
             <h4 className="text-lg font-bold text-slate-800">รายการคำขอจองล่าสุด</h4>
@@ -280,21 +280,21 @@ export function DashboardView({
                 onClick={() => onSelectBooking(booking)}
                 className="py-4 px-3 flex items-center justify-between hover:bg-slate-50/80 rounded-2xl transition cursor-pointer group"
               >
-                <div className="flex items-center space-x-3.5">
+                <div className="flex items-center space-x-3.5 min-w-0">
                   <div className="w-9 h-9 rounded-full bg-rose-50 text-[#7b1124] flex items-center justify-center shrink-0">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#7b1124]" />
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-800 group-hover:text-[#7b1124] transition">
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-slate-800 group-hover:text-[#7b1124] transition truncate">
                       {booking.roomName}
                     </p>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
                       {booking.dateLabel} · {booking.slot} · {booking.attendees} คน · ผู้ขอ: {booking.studentName} ({booking.studentId})
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 md:space-x-3 shrink-0 ml-2">
                   {getStatusBadge(booking.status)}
                   <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-600 transition" />
                 </div>

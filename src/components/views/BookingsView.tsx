@@ -47,7 +47,7 @@ export function BookingsView({
   });
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       {/* Title */}
       <div>
         <h3 className="text-xl font-bold text-slate-800">การจัดการคำขอจอง</h3>
@@ -98,14 +98,14 @@ export function BookingsView({
       {/* Bookings Table */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[720px] text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
-                <th className="py-4 px-6">ห้อง</th>
-                <th className="py-4 px-6">ผู้ขอใช้งาน</th>
-                <th className="py-4 px-6">วัน-เวลา</th>
-                <th className="py-4 px-6 text-center">สถานะ</th>
-                <th className="py-4 px-6 text-right">ดำเนินการ</th>
+                <th className="py-3 px-4 md:py-4 md:px-6">ห้อง</th>
+                <th className="py-3 px-4 md:py-4 md:px-6">ผู้ขอใช้งาน</th>
+                <th className="py-3 px-4 md:py-4 md:px-6">วัน-เวลา</th>
+                <th className="py-3 px-4 md:py-4 md:px-6 text-center">สถานะ</th>
+                <th className="py-3 px-4 md:py-4 md:px-6 text-right">ดำเนินการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
@@ -122,13 +122,13 @@ export function BookingsView({
                     className="hover:bg-slate-50/70 transition duration-150"
                   >
                     {/* ห้อง */}
-                    <td className="py-4 px-6">
+                    <td className="py-3 px-4 md:py-4 md:px-6">
                       <p className="font-bold text-slate-800">{b.roomName}</p>
                       <p className="text-xs text-slate-400">{b.roomType}</p>
                     </td>
 
                     {/* ผู้ขอใช้งาน */}
-                    <td className="py-4 px-6">
+                    <td className="py-3 px-4 md:py-4 md:px-6">
                       <p className="font-medium text-slate-800">{b.studentName}</p>
                       <p className="text-xs text-slate-400">
                         รหัส: {b.studentId} ({b.attendees} คน)
@@ -136,13 +136,13 @@ export function BookingsView({
                     </td>
 
                     {/* วัน-เวลา */}
-                    <td className="py-4 px-6">
+                    <td className="py-3 px-4 md:py-4 md:px-6">
                       <p className="text-slate-700 font-medium">{b.dateLabel}</p>
                       <p className="text-xs text-slate-400">{b.slot}</p>
                     </td>
 
                     {/* สถานะ */}
-                    <td className="py-4 px-6 text-center">
+                    <td className="py-3 px-4 md:py-4 md:px-6 text-center">
                       {b.status === "pending" && (
                         <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
                           รออนุมัติ
@@ -161,7 +161,7 @@ export function BookingsView({
                     </td>
 
                     {/* Actions */}
-                    <td className="py-4 px-6 text-right">
+                    <td className="py-3 px-4 md:py-4 md:px-6 text-right">
                       <div className="flex items-center justify-end space-x-2">
                         <button
                           onClick={() => onSelectBooking(b)}
