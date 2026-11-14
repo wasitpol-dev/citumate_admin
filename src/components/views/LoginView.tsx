@@ -85,22 +85,15 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
       <div className="w-full max-w-sm flex flex-col items-center my-auto z-10">
         {/* Brand Icon & Heading */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-lg mb-3">
-            <svg
-              className="w-9 h-9"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M3 10.5L12 3l9 7.5v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9.5z" />
-              <path d="M9 21V12h6v9" />
-            </svg>
+          <div className="w-24 h-16 mb-2 flex items-center justify-center">
+            <img
+              src="/logo-icon-white.png"
+              alt="CITUMATE"
+              className="w-full h-full object-contain drop-shadow-md"
+            />
           </div>
           <h1 className="text-3xl font-extrabold tracking-wider text-white uppercase font-serif drop-shadow-sm">
-            CITU MATE
+            CITUMATE
           </h1>
           <p className="text-xs font-semibold tracking-widest text-rose-200 uppercase mt-1">
             ADMIN PANEL

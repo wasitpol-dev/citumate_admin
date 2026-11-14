@@ -75,26 +75,21 @@ export function AdminSidebar({
               <X className="w-5 h-5" />
             </button>
 
-            <div className="inline-flex items-center justify-center w-12 h-12 mb-3 rounded-2xl bg-white/10 text-white backdrop-blur-sm border border-white/20">
-              <svg
-                className="w-7 h-7"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3 10.5L12 3l9 7.5v9.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9.5z" />
-                <path d="M9 21V12h6v9" />
-              </svg>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-11 mb-2 flex items-center justify-center">
+                <img
+                  src="/logo-icon-white.png"
+                  alt="CITUMATE"
+                  className="w-full h-full object-contain drop-shadow"
+                />
+              </div>
+              <h1 className="text-xl font-bold tracking-wider uppercase text-white font-serif">
+                CITUMATE
+              </h1>
+              <p className="text-[11px] tracking-widest text-rose-200/80 font-medium uppercase mt-0.5">
+                ADMIN PANEL
+              </p>
             </div>
-            <h1 className="text-xl font-bold tracking-wider uppercase text-white font-serif">
-              CITU MATE
-            </h1>
-            <p className="text-[11px] tracking-widest text-rose-200/80 font-medium uppercase mt-0.5">
-              ADMIN PANEL
-            </p>
           </div>
 
           {/* Navigation */}

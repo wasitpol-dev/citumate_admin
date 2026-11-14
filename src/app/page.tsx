@@ -101,11 +101,33 @@ export default function AdminApp() {
   const loadBookings = useCallback(async () => {
     setIsSyncing(true);
     try {
-      const res = await fetch("/api/bookings");
-      const json = await res.json();
+      let dataList: any[] = [];
+      try {
+        const res = await fetch("/api/bookings");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+            dataList = json.data;
+          }
+        }
+      } catch (e) {
+        console.log("Fetch /api/bookings failed:", e);
+      }
 
-      if (json.success && Array.isArray(json.data)) {
-        const mapped: Booking[] = json.data.map((r: any) => ({
+      // If API returned empty or failed, fetch directly from Supabase
+      if (dataList.length === 0) {
+        const { data, error } = await supabase
+          .from("bookings")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          dataList = data;
+        }
+      }
+
+      if (dataList.length > 0) {
+        const mapped: Booking[] = dataList.map((r: any) => ({
           id: r.id,
           roomId: String(r.room_id || "301"),
           roomName: r.room_name || "CITU Study Room",
@@ -117,15 +139,15 @@ export default function AdminApp() {
           slot: r.slot || "09:00 - 12:00",
           attendees: r.attendees || 1,
           purpose: r.purpose || "การศึกษาค้นคว้า",
-          studentName: r.student_name || "นักศึกษา CITU",
+          studentName: r.student_name || (r.user_id ? `นักศึกษา (${r.user_id.slice(0, 8)})` : "นักศึกษา CITU"),
           studentId: r.student_id || (r.user_id ? r.user_id.slice(0, 8) : "-"),
-          studentEmail: r.student_email || "student@citu.tu.ac.th",
+          studentEmail: r.student_email || (r.user_id ? `student_${r.user_id.slice(0, 6)}@dome.tu.ac.th` : "student@citu.tu.ac.th"),
           status:
-            r.status === "cancelled"
+            r.status === "cancelled" || r.status === "rejected"
               ? "rejected"
               : r.status === "approved"
               ? "approved"
-              : r.status || "pending",
+              : "pending",
           createdAt: r.created_at || new Date().toISOString(),
         }));
         setBookings(mapped);
@@ -151,7 +173,9 @@ export default function AdminApp() {
           console.log("Realtime event received:", payload);
           loadBookings();
           if (payload.eventType === "INSERT") {
-            showToast("🔔 มีคำขอจองห้องใหม่เข้ามาจากผู้ใช้งานจริง!");
+            showToast("🔔 มีคำขอจองห้องใหม่เข้ามาจากแอป CITUMATE!");
+          } else if (payload.eventType === "UPDATE") {
+            showToast("✓ ได้รับข้อมูลอัปเดตสถานะการจองเรียบร้อย");
           }
         }
       )
