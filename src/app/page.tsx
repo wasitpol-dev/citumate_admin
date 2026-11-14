@@ -29,7 +29,7 @@ export default function AdminApp() {
   const [previewMode, setPreviewMode] = useState<"login" | "dashboard" | "rooms">("dashboard");
 
   const [rooms, setRooms] = useState<Room[]>(INITIAL_ROOMS);
-  const [bookings, setBookings] = useState<Booking[]>(INITIAL_BOOKINGS);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   const [toastMessage, setToastMessage] = useState<{
@@ -103,7 +103,7 @@ export default function AdminApp() {
       const res = await fetch("/api/bookings");
       const json = await res.json();
 
-      if (json.success && json.data && json.data.length > 0) {
+      if (json.success && Array.isArray(json.data)) {
         const mapped: Booking[] = json.data.map((r: any) => ({
           id: r.id,
           roomId: String(r.room_id || "301"),
@@ -114,10 +114,10 @@ export default function AdminApp() {
           dateKey: r.date_key || "2026-11-14",
           dateLabel: r.date_label || "14 พ.ย. 2569",
           slot: r.slot || "09:00 - 12:00",
-          attendees: r.attendees || 4,
-          purpose: r.purpose || "การศึกษาค้นคว้าโครงงาน",
+          attendees: r.attendees || 1,
+          purpose: r.purpose || "การศึกษาค้นคว้า",
           studentName: r.student_name || "นักศึกษา CITU",
-          studentId: r.student_id || (r.user_id ? r.user_id.slice(0, 8) : "6509650001"),
+          studentId: r.student_id || (r.user_id ? r.user_id.slice(0, 8) : "-"),
           studentEmail: r.student_email || "student@citu.tu.ac.th",
           status:
             r.status === "cancelled"
@@ -439,7 +439,6 @@ export default function AdminApp() {
           {activeTab === "dashboard" && (
             <DashboardView
               bookings={bookings}
-              hourlyStats={HOURLY_STATS}
               onSelectBooking={(b) => setSelectedBooking(b)}
               onNavigateToRooms={() => {
                 setActiveTab("rooms");
@@ -473,7 +472,6 @@ export default function AdminApp() {
             <div className="p-8 max-w-7xl mx-auto">
               <DashboardView
                 bookings={bookings}
-                hourlyStats={HOURLY_STATS}
                 onSelectBooking={(b) => setSelectedBooking(b)}
                 onNavigateToRooms={() => setActiveTab("rooms")}
                 onNavigateToBookings={() => setActiveTab("bookings")}
