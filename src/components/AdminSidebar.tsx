@@ -58,10 +58,10 @@ export function AdminSidebar({
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 z-50 h-full w-64 bg-[#7b1124] text-white flex flex-col justify-between shrink-0 shadow-xl select-none
+          fixed top-0 left-0 z-50 h-full w-64 bg-[#7b1124] text-white flex flex-col justify-between shrink-0 shadow-xl select-none overflow-y-auto
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          md:relative md:translate-x-0 md:z-auto
+          md:sticky md:top-0 md:h-screen md:translate-x-0 md:z-auto
         `}
       >
         <div>

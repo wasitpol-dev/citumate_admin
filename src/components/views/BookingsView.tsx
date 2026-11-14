@@ -47,7 +47,7 @@ export function BookingsView({
   });
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 md:p-8 w-full space-y-6">
       {/* Title */}
       <div>
         <h3 className="text-xl font-bold text-slate-800">การจัดการคำขอจอง</h3>

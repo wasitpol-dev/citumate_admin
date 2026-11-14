@@ -477,7 +477,7 @@ export default function AdminApp() {
           {activeTab === "users" && <UsersView />}
 
           {activeTab === "reports" && (
-            <div className="p-4 md:p-8 max-w-7xl mx-auto">
+            <div className="p-4 md:p-8 w-full">
               <DashboardView
                 bookings={bookings}
                 onSelectBooking={(b) => setSelectedBooking(b)}
