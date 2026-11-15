@@ -69,7 +69,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
     onLoginSuccess({
       email: "wasitpol.kae@dome.tu.ac.th",
       user_metadata: {
-        full_name: "วสิทธิ์พล แก้วประดิษฐ์",
+        full_name: "Admin CITUMATE",
         role: "admin",
       },
     });

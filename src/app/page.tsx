@@ -23,7 +23,7 @@ export default function AdminApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>({
     email: "wasitpol.kae@dome.tu.ac.th",
-    user_metadata: { full_name: "วสิทธิ์พล แก้วประดิษฐ์", role: "admin" },
+    user_metadata: { full_name: "Admin CITUMATE", role: "admin" },
   });
   const [activeTab, setActiveTab] = useState<NavTab>("dashboard");
   const [previewMode, setPreviewMode] = useState<"login" | "dashboard" | "rooms">("dashboard");

@@ -102,7 +102,7 @@ export async function GET() {
         {
           id: "1",
           studentId: "6509650012",
-          name: "วสิทธิ์พล แก้วประดิษฐ์",
+          name: "Admin CITUMATE",
           email: "wasitpol.kae@dome.tu.ac.th",
           username: "wasitpol",
           major: "วิทยาลัยนวัตกรรม (CITU)",

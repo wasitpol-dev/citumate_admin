@@ -80,7 +80,7 @@ export const INITIAL_BOOKINGS: Booking[] = [
     slot: "09:00 - 12:00",
     attendees: 5,
     purpose: "ประชุมสัมมนาโครงงานวิจัยระดับปริญญาโท นวัตกรรมดิจิทัล",
-    studentName: "วสิทธิ์พล แก้วประดิษฐ์",
+    studentName: "Admin CITUMATE",
     studentId: "6509650012",
     studentEmail: "wasitpol.kae@dome.tu.ac.th",
     status: "pending",
