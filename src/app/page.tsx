@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { AdminSidebar, NavTab } from "@/components/AdminSidebar";
 import { AdminHeader } from "@/components/AdminHeader";
 import { LoginView } from "@/components/views/LoginView";
@@ -39,11 +39,43 @@ export default function AdminApp() {
   } | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
 
+  // เก็บ id ของการจองที่เคยเห็นแล้ว ใช้ตรวจว่ามีคำขอใหม่เข้ามาหรือไม่
+  const knownIdsRef = useRef<Set<number> | null>(null);
+
   const showToast = (text: string, type: "success" | "error" = "success") => {
     setToastMessage({ text, type });
     setTimeout(() => {
       setToastMessage(null);
     }, 3500);
+  };
+
+  // เล่นเสียงแจ้งเตือนสั้นๆ
+  const playNotifySound = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      }
+    } catch (errAudio) {}
+  };
+
+  // เด้งหน้าต่างอนุมัติเมื่อมีคำขอใหม่
+  const notifyNewBooking = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setActiveTab("bookings");
+    showToast("🔔 มีคำขอจองห้องใหม่เข้ามา! กำลังเปิดหน้าต่างให้กดอนุมัติ/ไม่อนุมัติ...");
+    playNotifySound();
   };
 
   // ตรวจสอบ Session จาก Supabase จริงเมื่อเริ่มต้น
@@ -98,12 +130,13 @@ export default function AdminApp() {
   }, []);
 
   // 2. Fetch Bookings from Supabase (ผูกกับผู้ใช้จริง)
-  const loadBookings = useCallback(async () => {
-    setIsSyncing(true);
+  // silent = true ใช้ตอนโหลดอัตโนมัติ (ไม่ให้ไอคอนรีเฟรชหมุน)
+  const loadBookings = useCallback(async (silent: boolean = false) => {
+    if (!silent) setIsSyncing(true);
     try {
       let dataList: any[] = [];
       try {
-        const res = await fetch("/api/bookings");
+        const res = await fetch("/api/bookings", { cache: "no-store" });
         if (res.ok) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -150,19 +183,36 @@ export default function AdminApp() {
               : "pending",
           createdAt: r.created_at || new Date().toISOString(),
         }));
+
+        // ตรวจหาคำขอ pending ใหม่ที่ยังไม่เคยเห็น แล้วแจ้งเตือน
+        const known = knownIdsRef.current;
+        if (known) {
+          const fresh = mapped.filter((b) => !known.has(b.id) && b.status === "pending");
+          if (fresh.length > 0) {
+            notifyNewBooking(fresh[0]);
+          }
+        }
+        knownIdsRef.current = new Set(mapped.map((b) => b.id));
+
         setBookings(mapped);
       }
     } catch (e) {
       console.log("Bookings load error:", e);
     } finally {
-      setIsSyncing(false);
+      // โหลดครั้งแรกเสร็จแล้ว (แม้ไม่มีข้อมูล) เริ่มนับคำขอใหม่ได้
+      if (!knownIdsRef.current) knownIdsRef.current = new Set();
+      if (!silent) setIsSyncing(false);
     }
   }, []);
 
-  // Subscribe to Supabase Realtime
+  // Realtime + Polling ทุก 5 วินาที (สำรองกรณี realtime ไม่ส่ง event)
   useEffect(() => {
     loadRooms();
     loadBookings();
+
+    const timer = setInterval(() => {
+      loadBookings(true);
+    }, 5000);
 
     const channel = supabase
       .channel("admin-bookings-realtime")
@@ -171,56 +221,9 @@ export default function AdminApp() {
         { event: "*", schema: "public", table: "bookings" },
         (payload) => {
           console.log("Realtime event received:", payload);
-          loadBookings();
-          if (payload.eventType === "INSERT") {
-            const newRow: any = payload.new;
-            const newBooking: Booking = {
-              id: newRow.id,
-              roomId: String(newRow.room_id || "301"),
-              roomName: newRow.room_name || "CITU Study Room",
-              roomType: newRow.room_name?.includes("Meeting")
-                ? "ห้องประชุม"
-                : "ห้องศึกษาค้นคว้า",
-              dateKey: newRow.date_key || new Date().toISOString().split("T")[0],
-              dateLabel: newRow.date_label || "14 พ.ย. 2569",
-              slot: newRow.slot || "09:00 - 12:00",
-              attendees: newRow.attendees || 1,
-              purpose: newRow.purpose || "การศึกษาค้นคว้า",
-              studentName:
-                newRow.student_name ||
-                (newRow.user_id ? `นักศึกษา (${newRow.user_id.slice(0, 8)})` : "นักศึกษา CITU"),
-              studentId: newRow.student_id || (newRow.user_id ? newRow.user_id.slice(0, 8) : "-"),
-              studentEmail:
-                newRow.student_email ||
-                (newRow.user_id ? `student_${newRow.user_id.slice(0, 6)}@dome.tu.ac.th` : "student@citu.tu.ac.th"),
-              status: "pending",
-              createdAt: newRow.created_at || new Date().toISOString(),
-            };
-
-            // เด้งไปหน้าแอดมินและเปิดหน้าต่างโมดอลให้กดอนุมัติหรือไม่อนุมัติทันที
-            setSelectedBooking(newBooking);
-            setActiveTab("bookings");
-            showToast("🔔 มีคำขอจองห้องใหม่เข้ามา! กำลังเปิดหน้าต่างให้กดอนุมัติ/ไม่อนุมัติ...");
-
-            // เล่นเสียงแจ้งเตือนสั้นๆ ให้แอดมินรู้ตัวทันที
-            try {
-              const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-              if (AudioCtx) {
-                const ctx = new AudioCtx();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.type = "sine";
-                osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
-                gain.gain.setValueAtTime(0.2, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.4);
-              }
-            } catch (errAudio) {}
-          } else if (payload.eventType === "UPDATE") {
+          // loadBookings จะตรวจคำขอใหม่และเด้งแจ้งเตือนให้เอง
+          loadBookings(true);
+          if (payload.eventType === "UPDATE") {
             showToast("✓ ได้รับข้อมูลอัปเดตสถานะการจองเรียบร้อย");
           }
         }
@@ -228,6 +231,7 @@ export default function AdminApp() {
       .subscribe();
 
     return () => {
+      clearInterval(timer);
       supabase.removeChannel(channel);
     };
   }, [loadRooms, loadBookings]);
